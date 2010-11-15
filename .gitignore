@@ -1,0 +1,14 @@
+/ZeroMQ-Raw-*
+/inc
+/build
+/blib
+/pm_to_blib
+/RawZMQ.c
+/RawZMQ.o
+/Raw.bs
+/ppport.h
+/Makefile
+/META.yml
+/MANIFEST
+/MANIFEST.SKIP
+/Makefile.old
