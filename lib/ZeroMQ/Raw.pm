@@ -1,4 +1,5 @@
 package ZeroMQ::Raw;
+# ABSTRACT: ZeroMQ binding that tries to maintain a 1:1 correspondence with the C api
 use strict;
 use warnings;
 use XSLoader;
@@ -10,6 +11,7 @@ our $VERSION = '0.00_01';
 XSLoader::load('ZeroMQ::Raw', $VERSION);
 
 require ZeroMQ::Raw::Context;
+require ZeroMQ::Raw::Message;
 
 1;
 

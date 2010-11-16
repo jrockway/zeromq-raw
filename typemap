@@ -1,1 +1,2 @@
 zmq_ctx_t * T_PTROBJ_MG
+zmq_msg_t * T_PTROBJ_MG
