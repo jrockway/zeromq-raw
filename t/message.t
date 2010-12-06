@@ -82,15 +82,15 @@ use ZeroMQ::Raw;
 
     ok $boring->is_allocated, 'allocated';
     throws_ok { $boring->init_size(42) }
-        qr/A message is already attached to this object!/,
+        qr/A struct is already attached to this object/,
             'cannot init again';
 
     throws_ok { $boring->init }
-        qr/A message is already attached to this object!/,
+        qr/A struct is already attached to this object/,
             'cannot init again';
 
     throws_ok { $boring->init_data("scalar") }
-        qr/A message is already attached to this object!/,
+        qr/A struct is already attached to this object/,
             'cannot init again';
 }
 

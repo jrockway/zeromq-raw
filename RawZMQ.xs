@@ -29,14 +29,14 @@ int zmqxs_has_object(SV *self){
     return (s != NULL);
 }
 
-inline void zmqxs_msg_ensure_unallocated(SV *self) {
+inline void zmqxs_ensure_unallocated(SV *self) {
     if(zmqxs_has_object(self))
-        croak("A message is already attached to this object!");
+        croak("A struct is already attached to this object (SV %p)!", self);
 }
 
 inline zmq_msg_t *zmqxs_msg_start_allocate(SV *self) {
     zmq_msg_t *msg;
-    zmqxs_msg_ensure_unallocated(self);
+    zmqxs_ensure_unallocated(self);
     Newx(msg, 1, zmq_msg_t);
     if(msg == NULL)
        croak("Error allocating memory for zmq_msg_t structure!");
@@ -111,6 +111,7 @@ zmq_init(SV *self, int threads)
         zmq_ctx_t *ctx;
 
     CODE:
+        zmqxs_ensure_unallocated(self);
         ctx = zmq_init(threads);
         if(ctx == NULL){
             SET_BANG;
