@@ -20,6 +20,7 @@ $pkg->add_pm(
     './lib/ZeroMQ/Raw/Context.pm'   => '$(INST_LIBDIR)/Raw/Context.pm',
     './lib/ZeroMQ/Raw/Message.pm'   => '$(INST_LIBDIR)/Raw/Message.pm',
     './lib/ZeroMQ/Raw/Constants.pm' => '$(INST_LIBDIR)/Raw/Constants.pm',
+    './lib/ZeroMQ/Raw/Socket.pm'    => '$(INST_LIBDIR)/Raw/Socket.pm',
 );
 $pkg->add_typemaps('typemap');
 $pkg->save_config('build/IFiles.pm');

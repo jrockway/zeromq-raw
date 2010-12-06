@@ -11,6 +11,8 @@
 #define SET_BANG zmqxs_set_bang(_ERRNO)
 
 typedef void zmq_ctx_t;
+typedef void zmq_sock_t;
+typedef int zmq_sock_err; /* for the typemap */
 
 inline void zmqxs_set_bang(int err){
     SV *errsv;
@@ -193,7 +195,7 @@ zmq_msg_data_nocopy(SV *self, SV *sv)
         if(len > 0){
             buf = zmq_msg_data(msg);
             /* printf("debug: sharing buf at %p\n", buf); */
-            sv_upgrade(sv, SVt_PV);
+            SvUPGRADE(sv, SVt_PV);
             SvPV_set(sv, buf);
             SvCUR_set(sv, len);
             SvLEN_set(sv, len);
@@ -234,6 +236,162 @@ zmq_msg_close(zmq_msg_t *msg)
 
 bool
 zmq_msg_is_allocated(SV *self)
+    CODE:
+        RETVAL = zmqxs_has_object(self);
+    OUTPUT:
+        RETVAL
+
+MODULE = ZeroMQ::Raw	PACKAGE = ZeroMQ::Raw::Socket	PREFIX = zmq_
+
+zmq_sock_err
+zmq_init_socket(SV *self, zmq_ctx_t *context, int type)
+    PREINIT:
+        zmq_sock_t *sock;
+    CODE:
+        sock = zmq_socket(context, type);
+        if(sock == NULL){
+            RETVAL = 1;
+        }
+        else {
+            xs_object_magic_attach_struct(aTHX_ SvRV(self), sock);
+            RETVAL = 0;
+        }
+    OUTPUT:
+        RETVAL
+
+zmq_sock_err
+zmq_close(zmq_sock_t *sock)
+
+zmq_sock_err
+zmq_bind(zmq_sock_t *sock, const char *endpoint)
+
+zmq_sock_err
+zmq_connect(zmq_sock_t *sock, const char *endpoint)
+
+zmq_sock_err
+zmq_send(zmq_sock_t *sock, zmq_msg_t *msg, int flags)
+
+zmq_sock_err
+zmq_recv(zmq_sock_t *sock, zmq_msg_t *msg, int flags)
+
+zmq_sock_err
+zmq_setsockopt(zmq_sock_t *sock, int option, SV *value)
+    PREINIT:
+        STRLEN len;
+        const char *ptr;
+        uint64_t u64;
+        int64_t  i64;
+    CODE:
+        switch(option){
+            case ZMQ_IDENTITY:
+            case ZMQ_SUBSCRIBE:
+            case ZMQ_UNSUBSCRIBE:
+                ptr = SvPV(value, len);
+                RETVAL = zmq_setsockopt(sock, option, ptr, len);
+                break;
+
+            case ZMQ_SWAP:
+            case ZMQ_RATE:
+            case ZMQ_RECOVERY_IVL:
+            case ZMQ_MCAST_LOOP:
+                i64 = SvIV(value);
+                RETVAL = zmq_setsockopt(sock, option, &i64, sizeof(int64_t));
+                break;
+
+            case ZMQ_HWM:
+            case ZMQ_AFFINITY:
+            case ZMQ_SNDBUF:
+            case ZMQ_RCVBUF:
+                u64 = SvUV(value);
+                RETVAL = zmq_setsockopt(sock, option, &u64, sizeof(uint64_t));
+                break;
+
+            default:
+                warn("Unknown sockopt type %d, assuming string.  Send patch!", option);
+                ptr = SvPV(value, len);
+                RETVAL = zmq_setsockopt(sock, option, ptr, len);
+        }
+    OUTPUT:
+        RETVAL
+
+SV *
+zmq_getsockopt(zmq_sock_t *sock, int option)
+    PREINIT:
+        char     buf[256];
+        int      i;
+        uint64_t u64;
+        int64_t  i64;
+        uint32_t i32;
+        size_t   len;
+        int      status = -1;
+    CODE:
+        switch(option){
+            case ZMQ_TYPE:
+            case ZMQ_LINGER:
+            case ZMQ_RECONNECT_IVL:
+            case ZMQ_BACKLOG:
+            case ZMQ_FD:
+                len = sizeof(i);
+                status = zmq_getsockopt(sock, option, &i, &len);
+                if(status == 0)
+                    RETVAL = newSViv(i);
+                break;
+
+            case ZMQ_RCVMORE:
+            case ZMQ_SWAP:
+            case ZMQ_RATE:
+            case ZMQ_RECOVERY_IVL:
+            case ZMQ_MCAST_LOOP:
+                len = sizeof(i64);
+                status = zmq_getsockopt(sock, option, &i64, &len);
+                if(status == 0)
+                    RETVAL = newSViv(i64);
+                break;
+
+            case ZMQ_HWM:
+            case ZMQ_AFFINITY:
+            case ZMQ_SNDBUF:
+            case ZMQ_RCVBUF:
+                len = sizeof(u64);
+                status = zmq_getsockopt(sock, option, &u64, &len);
+                if(status == 0)
+                    RETVAL = newSVuv(u64);
+                break;
+
+            case ZMQ_EVENTS:
+                len = sizeof(i32);
+                status = zmq_getsockopt(sock, option, &i32, &len);
+                if(status == 0)
+                    RETVAL = newSViv(i32);
+                break;
+
+            case ZMQ_IDENTITY:
+                len = sizeof(buf);
+                status = zmq_getsockopt(sock, option, &buf, &len);
+                if(status == 0)
+                    RETVAL = newSVpvn(buf, len);
+                break;
+        }
+        if(status != 0){
+	    SET_BANG;
+	    switch(_ERRNO) {
+	        case EINTR:
+                    croak("The operation was interrupted by delivery of a signal!");
+	        case ETERM:
+	            croak("The 0MQ context accociated with the specified socket was terminated!");
+	        case EFAULT:
+	            croak("The provided socket was not valid!");
+                case EINVAL:
+                    croak("Invalid argument!");
+	        default:
+	            croak("Unknown error reading socket option!");
+	    }
+	}
+    OUTPUT:
+        RETVAL
+
+bool
+zmq_is_allocated(SV *self)
     CODE:
         RETVAL = zmqxs_has_object(self);
     OUTPUT:

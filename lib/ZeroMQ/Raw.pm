@@ -12,6 +12,7 @@ XSLoader::load('ZeroMQ::Raw', $VERSION);
 
 require ZeroMQ::Raw::Context;
 require ZeroMQ::Raw::Message;
+require ZeroMQ::Raw::Socket;
 
 1;
 
