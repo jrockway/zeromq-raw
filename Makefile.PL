@@ -15,6 +15,7 @@ $extra_lib .= '-lzmq';
 $pkg->set_inc($extra_inc);
 $pkg->set_libs($extra_lib);
 $pkg->add_xs('RawZMQ.xs');
+$pkg->add_c('zmqxs.c');
 $pkg->add_pm(
     './lib/ZeroMQ/Raw.pm'           => '$(INST_LIBDIR)/Raw.pm',
     './lib/ZeroMQ/Raw/Context.pm'   => '$(INST_LIBDIR)/Raw/Context.pm',
