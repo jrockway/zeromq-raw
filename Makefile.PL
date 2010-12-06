@@ -16,9 +16,10 @@ $pkg->set_inc($extra_inc);
 $pkg->set_libs($extra_lib);
 $pkg->add_xs('RawZMQ.xs');
 $pkg->add_pm(
-    './lib/ZeroMQ/Raw.pm'         => '$(INST_LIBDIR)/Raw.pm',
-    './lib/ZeroMQ/Raw/Context.pm' => '$(INST_LIBDIR)/Raw/Context.pm',
-    './lib/ZeroMQ/Raw/Message.pm' => '$(INST_LIBDIR)/Raw/Message.pm',
+    './lib/ZeroMQ/Raw.pm'           => '$(INST_LIBDIR)/Raw.pm',
+    './lib/ZeroMQ/Raw/Context.pm'   => '$(INST_LIBDIR)/Raw/Context.pm',
+    './lib/ZeroMQ/Raw/Message.pm'   => '$(INST_LIBDIR)/Raw/Message.pm',
+    './lib/ZeroMQ/Raw/Constants.pm' => '$(INST_LIBDIR)/Raw/Constants.pm',
 );
 $pkg->add_typemaps('typemap');
 $pkg->save_config('build/IFiles.pm');
