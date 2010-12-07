@@ -24,6 +24,8 @@ T_ERRORCODE
 	            croak("The provided socket was not valid!");
                 case EINVAL:
                     croak("Invalid argument!");
+                case EINTR:
+                    croak("Interrupted by syscall!");
 	        default:
 	            croak("Unknown socket error!");
 	    }
