@@ -20,7 +20,7 @@ lives_ok {
 
 throws_ok {
     $ctx = ZeroMQ::Raw::Context->new( threads => -1 );
-} qr/Invalid number of threads \(-1\) passed to zmq_init!/,
+} qr/Invalid number of threads \(-1\) passed to zmq_init/,
     'dies when you try to allocate -1 threads';
 
 is 0+$!, 0+EINVAL, "got EINVAL in \$! ($!)";

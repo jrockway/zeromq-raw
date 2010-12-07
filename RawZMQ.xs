@@ -34,9 +34,9 @@ zmq_init(SV *self, int threads)
         if(ctx == NULL){
             SET_BANG;
             if(_ERRNO == EINVAL)
-                croak("Invalid number of threads (%d) passed to zmq_init!", threads);
+                croak("Invalid number of threads (%d) passed to zmq_init", threads);
 
-            croak("Unknown error allocating ZMQ context!");
+            croak("Unknown error allocating ZMQ context");
         }
         xs_object_magic_attach_struct(aTHX_ SvRV(self), ctx);
 
@@ -49,9 +49,9 @@ zmq_term(zmq_ctx_t *ctx);
         if(status < 0){
             SET_BANG;
             if(_ERRNO == EFAULT)
-                croak("Invalid context (%p) passed to zmq_term!", ctx);
+                croak("Invalid context (%p) passed to zmq_term", ctx);
 
-            croak("Unknown error terminating ZMQ context!");
+            croak("Unknown error terminating ZMQ context");
         }
 
 bool
@@ -85,9 +85,9 @@ zmq_msg_init_data(SV *self, SV *data)
         char *buf;
     CODE:
         if(!SvPOK(data))
-            croak("You must pass init_data an SvPV and 0x%p is not one!", data);
+            croak("You must pass init_data an SvPV and 0x%p is not one", data);
         if(SvUTF8(data))
-            croak("Wide character in init_data, you must encode characters!");
+            croak("Wide character in init_data, you must encode characters");
 
         buf = SvPV(data, len);
         ZMQ_MSG_ALLOCATE(zmq_msg_init_data(msg, buf, len, &zmqxs_free_sv, data));
@@ -105,7 +105,7 @@ zmq_msg_data_nocopy(SV *self, SV *sv)
     CODE:
         msg = xs_object_magic_get_struct(aTHX_ SvRV(self));
         if(!msg)
-            croak("Invalid call to zmq_msg_data: no zmq_msg_t attached!");
+            croak("Invalid call to zmq_msg_data: no zmq_msg_t attached");
 
         len = zmq_msg_size(msg);
         if(len > 0){
@@ -148,7 +148,7 @@ zmq_msg_close(zmq_msg_t *msg)
         Safefree(msg);
         if(status < 0){
             SET_BANG;
-            croak("Error closing message %p!", msg);
+            croak("Error closing message %p", msg);
         }
 
 bool
@@ -224,7 +224,7 @@ zmq_setsockopt(zmq_sock_t *sock, int option, SV *value)
                 break;
 
             default:
-                warn("Unknown sockopt type %d, assuming string.  Send patch!", option);
+                warn("Unknown sockopt type %d, assuming string.  Send patch", option);
                 ptr = SvPV(value, len);
                 RETVAL = zmq_setsockopt(sock, option, ptr, len);
         }
@@ -293,15 +293,15 @@ zmq_getsockopt(zmq_sock_t *sock, int option)
 	    SET_BANG;
 	    switch(_ERRNO) {
 	        case EINTR:
-                    croak("The operation was interrupted by delivery of a signal!");
+                    croak("The operation was interrupted by delivery of a signal");
 	        case ETERM:
-	            croak("The 0MQ context accociated with the specified socket was terminated!");
+	            croak("The 0MQ context accociated with the specified socket was terminated");
 	        case EFAULT:
-	            croak("The provided socket was not valid!");
+	            croak("The provided socket was not valid");
                 case EINVAL:
-                    croak("Invalid argument!");
+                    croak("Invalid argument");
 	        default:
-	            croak("Unknown error reading socket option!");
+	            croak("Unknown error reading socket option");
 	    }
 	}
     OUTPUT:

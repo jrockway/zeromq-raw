@@ -9,24 +9,24 @@ T_ERRORCODE
 	    SET_BANG;
 	    switch(_ERRNO) {
 	        case EPROTONOSUPPORT:
-	            croak("The requested transport protocol is not supported!");
+	            croak("The requested transport protocol is not supported");
 	        case ENOCOMPATPROTO:
-	            croak("The requested transport protocol is not compatible with the socket type!");
+	            croak("The requested transport protocol is not compatible with the socket type");
 	        case EADDRINUSE:
-	            croak("The requested address is already in use!");
+	            croak("The requested address is already in use");
 	        case EADDRNOTAVAIL:
-	            croak("The requested address was not local!");
+	            croak("The requested address was not local");
 	        case ENODEV:
-	            croak("The requested address specified a nonexistent interface!");
+	            croak("The requested address specified a nonexistent interface");
 	        case ETERM:
-	            croak("The 0MQ context accociated with the specified socket was terminated!");
+	            croak("The 0MQ context accociated with the specified socket was terminated");
 	        case EFAULT:
-	            croak("The provided socket was not valid!");
+	            croak("The provided socket was not valid");
                 case EINVAL:
-                    croak("Invalid argument!");
+                    croak("Invalid argument");
                 case EINTR:
-                    croak("Interrupted by syscall!");
+                    croak("Interrupted by syscall");
 	        default:
-	            croak("Unknown socket error!");
+	            croak("Unknown socket error");
 	    }
 	}
