@@ -26,6 +26,8 @@ T_ERRORCODE
                     croak("Invalid argument");
                 case EINTR:
                     croak("Interrupted by syscall");
+                case EAGAIN:
+                    croak("The operation would block, and no-block mode was requested.");
 	        default:
 	            croak("Unknown socket error");
 	    }
