@@ -1,7 +1,6 @@
 package ZeroMQ::Raw::Constants;
 use strict;
 use warnings;
-use true;
 
 my %CONSTANTS;
 
@@ -52,3 +51,5 @@ BEGIN {
 use Sub::Exporter -setup => {
     exports => [ keys %CONSTANTS ],
 };
+
+1;
