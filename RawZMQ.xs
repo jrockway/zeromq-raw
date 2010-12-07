@@ -83,6 +83,7 @@ zmq_msg_init_data(SV *self, SV *data)
         zmq_msg_t *msg;
         STRLEN len;
         char *buf;
+        zmqxs_sv_t *hint;
     CODE:
         if(!SvPOK(data))
             croak("You must pass init_data an SvPV and 0x%p is not one", data);
@@ -90,7 +91,8 @@ zmq_msg_init_data(SV *self, SV *data)
             croak("Wide character in init_data, you must encode characters");
 
         buf = SvPV(data, len);
-        ZMQ_MSG_ALLOCATE(zmq_msg_init_data(msg, buf, len, &zmqxs_free_sv, data));
+        hint = zmqxs_new_sv(data);
+        ZMQ_MSG_ALLOCATE(zmq_msg_init_data(msg, buf, len, &zmqxs_free_sv, hint));
         SvREFCNT_inc_simple_void_NN(data);
 
 int
@@ -118,7 +120,7 @@ zmq_msg_data_nocopy(SV *self, SV *sv)
             SvPOK_on(sv);
             SvREADONLY_on(sv);
             /* make buf stay alive as long as sv is alive */
-            zmqxs_ref_sv(aTHX_ sv, self);
+            zmqxs_ref_sv(sv, self);
             RETVAL = len;
         }
     OUTPUT:
