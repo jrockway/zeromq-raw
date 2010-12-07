@@ -145,6 +145,7 @@ zmq_msg_close(zmq_msg_t *msg)
         int status = 0;
     CODE:
         status = zmq_msg_close(msg);
+        Safefree(msg);
         if(status < 0){
             SET_BANG;
             croak("Error closing message %p!", msg);
