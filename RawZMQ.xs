@@ -83,7 +83,7 @@ zmq_msg_init_data(SV *self, SV *data)
         zmq_msg_t *msg;
         STRLEN len;
         char *buf;
-        zmqxs_sv_t *hint;
+        char *copy;
     CODE:
         if(!SvPOK(data))
             croak("You must pass init_data an SvPV and 0x%p is not one", data);
@@ -91,40 +91,11 @@ zmq_msg_init_data(SV *self, SV *data)
             croak("Wide character in init_data, you must encode characters");
 
         buf = SvPV(data, len);
-        hint = zmqxs_new_sv(data);
-        ZMQ_MSG_ALLOCATE(zmq_msg_init_data(msg, buf, len, &zmqxs_free_sv, hint));
-        SvREFCNT_inc_simple_void_NN(data);
+        copy = savepvn(buf, len);
+        ZMQ_MSG_ALLOCATE(zmq_msg_init_data(msg, copy, len, &zmqxs_free_data, NULL));
 
 int
 zmq_msg_size(zmq_msg_t *msg)
-
-int
-zmq_msg_data_nocopy(SV *self, SV *sv)
-    PREINIT:
-        char *buf;
-        size_t len;
-        zmq_msg_t *msg;
-    CODE:
-        msg = xs_object_magic_get_struct(aTHX_ SvRV(self));
-        if(!msg)
-            croak("Invalid call to zmq_msg_data: no zmq_msg_t attached");
-
-        len = zmq_msg_size(msg);
-        if(len > 0){
-            buf = zmq_msg_data(msg);
-            /* printf("debug: sharing buf at %p\n", buf); */
-            SvUPGRADE(sv, SVt_PV);
-            SvPV_set(sv, buf);
-            SvCUR_set(sv, len);
-            SvLEN_set(sv, len);
-            SvPOK_on(sv);
-            SvREADONLY_on(sv);
-            /* make buf stay alive as long as sv is alive */
-            zmqxs_ref_sv(sv, self);
-            RETVAL = len;
-        }
-    OUTPUT:
-        RETVAL
 
 SV *
 zmq_msg_data(zmq_msg_t *msg)

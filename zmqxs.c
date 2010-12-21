@@ -8,23 +8,8 @@ inline void Zmqxs_set_bang(pTHX_ int err){
     sv_setsv(errsv, newSViv(err));
 }
 
-zmqxs_sv_t *Zmqxs_new_sv(pTHX_ SV *sv) {
-     zmqxs_sv_t *hint;
-     Newx(hint, 1, zmqxs_sv_t);
-     if(hint == NULL)
-       croak("Problem allocating SV hint struct");
-     hint->perl = PERL_GET_CONTEXT;
-     hint->sv = sv;
-     return hint;
-}
-
-void zmqxs_free_sv(void *data, void *hint) {
-     /* printf("debug: freeing data at %p, given SvPV with pointer at %p\n",
-            data, SvPV_nolen((SV *) hint)); */
-     zmqxs_sv_t *h = hint;
-     PerlInterpreter *my_perl = h->perl;
-     SvREFCNT_dec((SV *) h->sv);
-     Safefree(h);
+void zmqxs_free_data(void *data, void *hint) {
+    Safefree(data);
 }
 
 int Zmqxs_has_object(pTHX_ SV *self){
@@ -55,35 +40,4 @@ inline void Zmqxs_msg_finish_allocate(pTHX_ SV *self, int status, zmq_msg_t *msg
         croak("Unknown error initializing message!");
     }
     xs_object_magic_attach_struct(aTHX_ SvRV(self), msg);
-}
-
-/* magic for a SvPV whose buffer is owned by another SV */
-
-STATIC MGVTBL ref_mg_vtbl = {
-    NULL, /* get */
-    NULL, /* set */
-    NULL, /* len */
-    NULL, /* clear */
-    Zmqxs_ref_mg_free, /* free */
-#if MGf_COPY
-    NULL, /* copy */
-#endif /* MGf_COPY */
-#if MGf_DUP
-    NULL, /* dup */
-#endif /* MGf_DUP */
-#if MGf_LOCAL
-    NULL, /* local */
-#endif /* MGf_LOCAL */
-};
-
-int Zmqxs_ref_mg_free(pTHX_ SV *sv, MAGIC* mg){
-    /* printf("debug: decrementing refcnt on SV %p attached to %p\n",
-              mg->mg_ptr, sv); */
-    SvREFCNT_dec( (SV *) mg->mg_ptr);
-}
-
-void Zmqxs_ref_sv(pTHX_ SV *sv, SV *ptr){
-    /* printf("debug: attaching magical magic to %p (refs %p)\n", sv, ptr); */
-    SvREFCNT_inc_simple_void_NN(ptr);
-    sv_magicext(sv, NULL, PERL_MAGIC_ext, &ref_mg_vtbl, (void *) ptr, 0 );
 }

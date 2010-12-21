@@ -2,7 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 use Test::Exception;
-use Devel::Peek qw(Dump SvREFCNT);
 
 use ZeroMQ::Raw;
 
@@ -40,39 +39,15 @@ use ZeroMQ::Raw;
 # new from scalar
 {
     my $scalar = "foo bar";
-    is SvREFCNT($scalar), 1, 'baseline refcnt';
 
     my $from_scalar;
     lives_ok {
         $from_scalar = ZeroMQ::Raw::Message->new_from_scalar($scalar);
     } 'creating msg from scalar works';
 
-    is SvREFCNT($scalar), 2, 'refcnt increased ok';
-
     ok $from_scalar->is_allocated, 'allocated ok';
     is $from_scalar->size, 7, 'got correct size';
     is $from_scalar->data, 'foo bar', 'got correct data';
-
-    is SvREFCNT($from_scalar), 1, 'message has refcnt of 1';
-    {
-        # test zero-copy
-        my $not_copied;
-        $from_scalar->data_nocopy($not_copied);
-        is $not_copied, 'foo bar', 'got correct data';
-        is SvREFCNT($from_scalar), 2, 'message gets refcnt++';
-
-        # changing scalar changes not_copied
-        $scalar =~ s/foo/goo/;
-
-        is $not_copied, 'goo bar', 'got new data (!)';
-    }
-    is SvREFCNT($from_scalar), 1, 'data non-copy goes away, message refcnt--';
-
-    lives_ok {
-        undef $from_scalar;
-    } 'undef $from_scalar lives ok';
-
-    is SvREFCNT($scalar), 1, 'refcnt decremented when message went away';
 }
 
 {
