@@ -171,8 +171,16 @@ zmq_setsockopt(zmq_sock_t *sock, int option, SV *value)
         const char *ptr;
         uint64_t u64;
         int64_t  i64;
+        int        i;
     CODE:
         switch(option){
+            case ZMQ_LINGER:
+            case ZMQ_RECONNECT_IVL:
+            case ZMQ_BACKLOG:
+                i = SvIV(value);
+                RETVAL = zmq_setsockopt(sock, option, &i, sizeof(int));
+                break;
+
             case ZMQ_IDENTITY:
             case ZMQ_SUBSCRIBE:
             case ZMQ_UNSUBSCRIBE:
@@ -183,6 +191,7 @@ zmq_setsockopt(zmq_sock_t *sock, int option, SV *value)
             case ZMQ_SWAP:
             case ZMQ_RATE:
             case ZMQ_RECOVERY_IVL:
+            case ZMQ_RECOVERY_IVL_MSEC:
             case ZMQ_MCAST_LOOP:
                 i64 = SvIV(value);
                 RETVAL = zmq_setsockopt(sock, option, &i64, sizeof(int64_t));

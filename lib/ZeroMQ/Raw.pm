@@ -6,7 +6,7 @@ use XSLoader;
 use XS::Object::Magic;
 use 5.008;
 
-our $VERSION = '0.00_01';
+our $VERSION = '0.00_02';
 
 XSLoader::load('ZeroMQ::Raw', $VERSION);
 
