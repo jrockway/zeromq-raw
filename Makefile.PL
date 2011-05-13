@@ -1,19 +1,33 @@
 use strict;
 use warnings;
-use inc::Module::Install;
+use ExtUtils::MakeMaker;
 use ExtUtils::Depends;
 
 mkdir 'build';
 my $pkg = ExtUtils::Depends->new( 'ZeroMQ::Raw', 'XS::Object::Magic' );
 
+# if you need to set -I or -L, do it via the arguments INC and LIBS:
+#
+# perl Makefile.PL INC="-I/opt/zeromq/include" LIBS="-L/opt/zeromq -lzmq"
+#
+# this is a standard and oft-unused ExtUtils::MakeMaker feature
+# (though we reimplement it here for the benefit of ExtUtils::Depends)
 
-my $extra_inc = $ENV{ZMQ_INCLUDE} || $ENV{ZMQ} ? $ENV{ZMQ}.'/include' : '';
-my $extra_lib = $ENV{ZMQ_LIB}     || $ENV{ZMQ} ? $ENV{ZMQ}.'/lib'     : '';
-$extra_lib .= ' ' if $extra_lib;
-$extra_lib .= '-lzmq';
+my @argv = @ARGV;
+@ARGV = ();
 
-$pkg->set_inc($extra_inc);
-$pkg->set_libs($extra_lib);
+my %args;
+for my $arg (@argv){
+    if($arg =~ /^([A-Z]+)=(.+)$/ && $1 eq 'LIBS' || $1 eq 'INC'){
+        $args{$1} = $2;
+    }
+    else {
+        push @ARGV, $arg;
+    }
+}
+
+$pkg->set_inc($args{INC}) if $args{INC};
+$pkg->set_libs($args{LIBS} ? $args{LIBS}. ' -lzmq' : '-lzmq');
 $pkg->add_xs('RawZMQ.xs');
 $pkg->add_c('zmqxs.c');
 $pkg->add_pm(
@@ -26,21 +40,25 @@ $pkg->add_pm(
 $pkg->add_typemaps('typemap');
 $pkg->save_config('build/IFiles.pm');
 
-# use DDS;
-# warn Dump({$pkg->get_makefile_vars});
-makemaker_args(
-    $pkg->get_makefile_vars,
+WriteMakefile(
+  ABSTRACT => 'minimal ZeroMQ that follows the C API as closely as possible',
+  AUTHOR => 'Jonathan Rockway <jrockway@cpan.org>',
+  BUILD_REQUIRES => {
+      'Test::More'      => '0',
+      'Test::Exception' => '0',
+  },
+  CONFIGURE_REQUIRES => {
+      'ExtUtils::MakeMaker' => '6.31',
+      'ExtUtils::Depends'   => '0.300',
+      'XS::Object::Magic'   => 0,
+  },
+  DISTNAME => 'ZeroMQ-Raw',
+  LICENSE => 'lgpl',
+  NAME => 'ZeroMQ::Raw',
+  PREREQ_PM => {
+      'XS::Object::Magic' => 0,
+  },
+  VERSION => '0.01',
+  test => { 'TESTS' => 't/*.t' },
+  $pkg->get_makefile_vars,
 );
-
-name 'ZeroMQ-Raw';
-license 'LGPL';
-all_from 'lib/ZeroMQ/Raw.pm';
-ppport;
-
-configure_requires 'ExtUtils::Depends';
-configure_requires 'XS::Object::Magic';
-requires 'XS::Object::Magic';
-test_requires 'Test::More';
-test_requires 'Test::Exception';
-
-WriteAll;
